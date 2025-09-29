@@ -8,27 +8,33 @@
   <style>
     :root {
       --bg:#0f1216; --fg:#e8eef6; --muted:#9fb0c6; --accent:#7cc; --card:#151a21;
-      --border: #263140;
+      --border:#263140;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;display:flex;flex-direction:column}
-    header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;background:linear-gradient(180deg, #121820, #0f1216);position:sticky;top:0;z-index:2}
+    body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column}
+    header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center;background:linear-gradient(180deg,#121820,#0f1216);position:sticky;top:0;z-index:2}
     h1{margin:0;font-size:16px;font-weight:600;letter-spacing:.3px}
     .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:12px}
     main{display:grid;grid-template-columns:1fr 320px;gap:0;min-height:0;flex:1}
-    @media (max-width: 980px){ main{grid-template-columns:1fr} aside{order:-1;border-right:none;border-bottom:1px solid var(--border)} }
-    .viewer{position:relative;min-height: calc(100vh - 56px)}
-    model-viewer{width:100%;height:100%;display:block; background: radial-gradient(1000px 400px at 50% -200px, #1b2430 0%, #101419 60%, #0f1216 100%);}
+    /* ▼スマホではビューアを最上段に */
+    @media (max-width:980px){
+      main{grid-template-columns:1fr}
+      .viewer{order:-1}
+      aside{order:unset;border-right:none;border-bottom:1px solid var(--border)}
+    }
+    .viewer{position:relative;min-height:calc(100vh - 56px)}
+    /* ▼ビューア背景を白に */
+    model-viewer{width:100%;height:100%;display:block;background:#ffffff;}
     .drop{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s}
-    .drop.show{opacity:1;background:#0007;backdrop-filter: blur(3px)}
-    .drop .box{border:2px dashed #7cc;border-radius:16px;padding:24px 28px;background:#111a; color:#cff; font-weight:600}
-    aside{border-left:1px solid var(--border);padding:14px;background:linear-gradient(180deg, #0f1216, #0f141a);}
+    .drop.show{opacity:1;background:#0007;backdrop-filter:blur(3px)}
+    .drop .box{border:2px dashed #7cc;border-radius:16px;padding:24px 28px;background:#111a;color:#cff;font-weight:600}
+    aside{border-left:1px solid var(--border);padding:14px;background:linear-gradient(180deg,#0f1216,#0f141a);}
     .group{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:12px;margin-bottom:12px}
     .group h2{margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:600}
     .row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
     label{font-size:13px;color:var(--muted)}
-    input[type="file"], input[type="text"]{width:100%}
+    input[type="file"],input[type="text"]{width:100%}
     .btn{appearance:none;border:1px solid var(--border);background:#0d141b;color:var(--fg);padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px}
     .btn:active{transform:translateY(1px)}
     .btn.secondary{background:#0b1015;color:#cfe}
@@ -54,7 +60,7 @@
         alt="3D model"
         camera-controls
         shadow-intensity="1"
-        exposure="1.0"
+        exposure="1.4"              <!-- 明るめスタート -->
         ar
         touch-action="pan-y"
         interaction-prompt="none">
@@ -70,7 +76,7 @@
           <input id="file" type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json"/>
         </div>
         <div class="row">
-          <input id="url" type="text" placeholder="モデルのURL（https:// 〜 .glb）" />
+          <input id="url" type="text" placeholder="モデルのURL（https:// 〜 .glb）"/>
           <button id="loadUrl" class="btn">読込</button>
         </div>
         <p class="hint">ドラッグ＆ドロップでも読み込めます。クエリ <code>?src=...</code> でも自動読込します。</p>
@@ -85,12 +91,12 @@
         </div>
         <div class="row">
           <label for="exposure">露出：</label>
-          <input id="exposure" type="range" min="0.2" max="2.0" step="0.05" value="1.0"/>
-          <span id="expVal" class="hint">1.0</span>
+          <input id="exposure" type="range" min="0.2" max="2.0" step="0.05" value="1.4"/>
+          <span id="expVal" class="hint">1.4</span>
         </div>
         <div class="row">
           <label for="bg">背景色：</label>
-          <input id="bg" type="color" value="#101419"/>
+          <input id="bg" type="color" value="#ffffff"/>
         </div>
       </div>
 
@@ -129,7 +135,6 @@
       mv.src = initialSrc;
       url.value = initialSrc;
       mv.addEventListener('load', () => {
-        // 読み込み後にカメラをターゲットへ
         mv.cameraTarget = 'auto auto auto';
       }, {once:true});
     }
@@ -160,7 +165,6 @@
     // カメラリセット
     resetBtn.addEventListener('click', () => {
       mv.resetTurntableRotation('180deg');
-      // cameraTarget/cameraOrbitは内部で復元される
     });
 
     // 露出
@@ -173,6 +177,8 @@
     bg.addEventListener('input', () => {
       mv.style.background = bg.value;
     });
+    // 初期の色入力値を反映（白）
+    mv.style.background = bg.value;
 
     // Drag & Drop
     const prevent = e => { e.preventDefault(); e.stopPropagation(); }
